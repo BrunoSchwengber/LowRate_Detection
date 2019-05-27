@@ -14,6 +14,7 @@ import threading
 #	AUTOR: BRUNO HENRIQUE SCHWENGBER										#						
 #	DATA:  16/05/2019														#
 #############################################################################
+
 class Sniffer():
 	cont=0
 	entrada = []
@@ -21,7 +22,6 @@ class Sniffer():
 	sport = []
 	interface = None
 	entropias = []
-
 	cont_detection = 0
 
 	#Funcao responsavel por capturar o tamanho dos pacotes e adicionar
@@ -35,13 +35,13 @@ class Sniffer():
 		self.cont=self.cont+1 #contadore e acrescentado em 1 para contagem do tamanho da janela
 		self.entrada.append(len) #vetor entrada recebe o valor do tamanho do pacote
 		
-		dst = pkt.dst
+		dst = pkt.src
 		self.dest.append(dst)
-
+		#print(self.dest)
 		inport = pkt.sport
 		self.sport.append(inport)
 
-		if (self.cont == 80): #verificacao se a quantidade de pacotes ja chego no tamanho da janela (80)
+		if (self.cont == 50): #verificacao se a quantidade de pacotes ja chego no tamanho da janela (80)
 			self.cont=0 #contador e zerado para nova contagem da janela
 			self.entropy(self.entrada, self.dest, self.sport) #e feito o calculo da entropia com base nos valores do vetor de entrada
 			self.entrada.clear() #vetor de entrada e zerado para novas entradas
@@ -85,7 +85,11 @@ class Sniffer():
 			arquivo = open("/home/ubuntu/ryu/apontador.txt", "w")
 			arquivo.write(switch+"\n")
 			arquivo.write(destino+"\n")
-			arquivo.write(in_porta)
+			arquivo.write(in_porta+"\n")
+			arquivo.close()
+			time.sleep(1)
+			arquivo = open("/home/ubuntu/ryu/apontador.txt", "w")
+			arquivo.write("0\n\n")
 			arquivo.close() 
 		else:
 			arquivo = open("/home/ubuntu/ryu/flag.txt", "w")
@@ -115,10 +119,13 @@ if __name__ == '__main__':
 	y = []
 	for x in interfaces:
 		snif = Sniffer()
-		t = threading.Thread(target=snif.main, args=(snif,x))
-		print(t)
-		t.start()
-		y.append(t)
+		if x != 'lo' and x != 'docker0' and x != 'eth0' and x != 'eth1':
+			t = threading.Thread(target=snif.main, args=(snif,x))
+			print(t)
+			t.start()
+			y.append(t)
+			
+			
 
 
 
